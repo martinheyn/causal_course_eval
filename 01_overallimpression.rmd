@@ -1,0 +1,234 @@
+---
+title: "Loading data"
+output: html_notebook
+---
+
+# Part 0: Customise functions
+```{r}
+standardise <- function(x) {
+  # Standardize x
+  standardized_x <- ((x - mean(x)) / sd(x))
+  
+  # Return the standardized vector
+  return(standardized_x)
+}
+
+standardize_dataframe <- function(data) {
+  # Apply standardization to all numeric columns in the dataframe
+  data_standardised <- as.data.frame(lapply(data, function(x) {
+    if(is.numeric(x)) {
+      return(standardise(x))
+    } else {
+      return(x)
+    }
+  }))
+  
+  # Return the standardized dataframe
+  return(data_standardised)
+}
+
+```
+
+# Part 1: Load data from .xlsx file
+```{r}
+library(readxl)
+
+data_real <- read_excel("./data/20240418_data_in.xlsx")
+str(data_real)
+
+data_real_s <- standardize_dataframe(data_real)
+str(data_real_s)
+```
+
+# Part 2: Create some simulated non-sense data for testing of the model
+
+## a. For Teaching -> Overall <- CourseStruc
+```{r}
+n <- 100
+Teaching <- rnorm(n, 0, 0.5)
+CourseStruc <- rnorm(n, 0.75*3 + 0.25*Teaching, 0.5)
+Overall <- rnorm(n, 0.2*5 + 0.6 * Teaching + 0.2*CourseStruc, 0.2)
+
+data_sim <- data.frame(Teaching, CourseStruc, Overall)
+
+data_sim_s <- standardize_dataframe(data_sim)
+str(data_sim_s)
+
+```
+
+## b. Return Rate -> Overall Impression
+```{r}
+n <- 100
+ReturnRate <- rnorm(n, 0.3, 0.1)
+Overall <- rnorm(n, 0.8*5 + 0.2 * ReturnRate, 0.2)
+
+data_sim <- data.frame(ReturnRate, Overall)
+
+data_sim_s <- standardize_dataframe(data_sim)
+str(data_sim_s)
+
+plot(data_sim$Overall, data_sim$ReturnRate, col="green")
+points(data_real$Overall, data_real$Percentage, col="purple")
+```
+
+# Part 3: Prior predictive simulation
+
+## a. For Teaching -> Overall
+```{r}
+library(rethinking)
+
+n <- 100
+a <- rnorm(n, 0, 1)
+b_T <- rnorm(n, 1, 0.5)
+
+plot(NULL, xlim = c(1, 5), ylim = c(1, 5),
+xlab = "Teaching",
+ylab = "Overall Impression")
+Aseq <- seq(from = -1, to = 6, len = 50)
+for (i in 1:n) {
+    mu <- a[i] + b_T[i] * Aseq
+    lines(Aseq, mu, lwd = 0.5, col = "blue")
+}
+points(data_real$Teaching,data_real$Overall,col="green", cex=1.5, pch=19)
+```
+
+## b. For Teaching -> Course Structure
+```{r}
+library(rethinking)
+
+n <- 100
+a <- rnorm(n, 0.1, 1)
+b_TC <- rnorm(n, 0.5, 1)
+
+plot(NULL, xlim = c(1, 5), ylim = c(1, 5),
+xlab = "Course Structure",
+ylab = "Teaching")
+Aseq <- seq(from = -1, to = 6, len = 50)
+for (i in 1:n) {
+    mu <- a[i] + b_TC[i] * Aseq
+    lines(Aseq, mu, lwd = 0.5, col = "blue")
+}
+points(data_real$CourseStruc,data_real$Teaching,col="red", cex=1.5, pch=19)
+```
+
+## c. For Course Structure -> Overall Impression
+```{r}
+library(rethinking)
+
+n <- 100
+a <- rnorm(n, 0.1, 1)
+b_C <- rnorm(n, 0.5, 1)
+
+plot(NULL, xlim = c(1, 5), ylim = c(1, 5),
+xlab = "Overall Impression",
+ylab = "Course Structure")
+Aseq <- seq(from = -1, to = 6, len = 50)
+for (i in 1:n) {
+    mu <- a[i] + b_C[i] * Aseq
+    lines(Aseq, mu, lwd = 0.5, col = "blue")
+}
+points(data_real$Overall,data_real$CourseStruc,col="yellow", cex=1.5, pch=19)
+```
+
+## d. For return_rate -> Overall
+```{r}
+library(rethinking)
+
+n <- 100
+a <- rnorm(n, 3, 1)
+b_rr <- rnorm(n, 1, 1)
+
+plot(NULL, xlim = c(0, 1), ylim = c(0, 6),
+xlab = "Return Rate",
+ylab = "Overall Impression")
+Aseq <- seq(from = -10, to = 10, len = 50)
+for (i in 1:n) {
+    mu <- a[i] + b_rr[i] * Aseq
+    lines(Aseq, mu, lwd = 0.5, col = "green")
+}
+points(data_real$Percentage,data_real$Overall,col="purple", cex=1.5, pch=19)
+```
+
+# Part 4: Build prediction models
+
+## a. Teaching -> Overall
+```{r}
+# Choose between simulated and real data
+data_in <- data_real
+
+# Define the input data
+dlist <- list(
+    Teaching = data_in$Teaching,
+    Structure = data_in$CourseStruc,
+    Overall = data_in$Overall
+)
+
+model_m1 <- ulam(
+    alist(
+    # CourseStruc -> Overall model
+    Overall ~ dnorm(mu, sigma),
+    mu <- a + b_T * Teaching,
+    a ~ dnorm(0, 1),
+    b_T ~ dnorm(0, 0.2),
+    sigma ~ dexp(1)
+    ), data = dlist
+)
+```
+
+## b. CourseStruc -> Overall <- Teaching with interaction Teaching -> Course Struc
+```{r}
+# Choose between simulated and real data
+data_in <- data_sim
+
+# Define the input data
+dlist <- list(
+    Teaching = data_in$Teaching,
+    Structure = data_in$CourseStruc,
+    Overall = data_in$Overall
+)
+
+model_m4 <- ulam(
+    alist(
+    # CourseStruc -> Overall <- Teaching
+    Overall ~ dnorm(mu, sigma),
+    mu <- a + b_T * Teaching + b_C * Structure,
+    a ~ dnorm(0.1, 1),
+    b_T ~ dnorm(1, 1),
+    b_C ~ dnorm(0.5, 1),
+    sigma ~ dexp(1),
+
+    # Teaching -> CourseStruc
+    Structure ~ dnorm(nu, tau),
+    nu <- a_T + b_CT * Teaching,
+    a_T ~ dnorm(0, 1),
+    b_CT ~ dnorm(0.5, 1),
+    tau ~ dexp(1)
+    ), data = dlist, chains = 2, cores = 2
+)
+```
+
+## c. Return Rate -> Overall Impression
+```{r}
+# Choose between simulated and real data
+data_in <- data_sim
+
+# Define the input data
+dlist <- list(
+    ReturnRate = data_in$Percentage,
+    Teaching = data_in$Teaching,
+    Structure = data_in$CourseStruc,
+    Overall = data_in$Overall
+)
+
+model_m4 <- ulam(
+    alist(
+    # CourseStruc -> Overall <- Teaching
+    Overall ~ dnorm(mu, sigma),
+    mu <- a + b_rr * ReturnRate,
+    a ~ dnorm(3, 1),
+    b_rr ~ dnorm(1, 1)
+    sigma ~ dexp(1)
+
+    ), data = dlist, chains = 2, cores = 2
+)
+```
