@@ -153,6 +153,8 @@ points(data_real$Percentage,data_real$Overall,col="purple", cex=1.5, pch=19)
 
 ## a. Teaching -> Overall
 ```{r}
+library(rethinking)
+
 # Choose between simulated and real data
 data_in <- data_real
 
@@ -222,13 +224,12 @@ dlist <- list(
 
 model_m4 <- ulam(
     alist(
-    # CourseStruc -> Overall <- Teaching
+    # Return Rate -> Overall impression
     Overall ~ dnorm(mu, sigma),
     mu <- a + b_rr * ReturnRate,
     a ~ dnorm(3, 1),
-    b_rr ~ dnorm(1, 1)
+    b_rr ~ dnorm(1, 1),
     sigma ~ dexp(1)
-
     ), data = dlist, chains = 2, cores = 2
 )
 ```
