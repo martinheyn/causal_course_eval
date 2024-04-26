@@ -60,7 +60,7 @@ str(data_sim_s)
 ```{r}
 n <- 100
 ReturnRate <- rnorm(n, 0.3, 0.1)
-Overall <- rnorm(n, 0.8*5 + 0.2 * ReturnRate, 0.2)
+Overall <- rnorm(n, 0.8*5 + 0.4 * ReturnRate, 0.2)
 
 data_sim <- data.frame(ReturnRate, Overall)
 
