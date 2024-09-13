@@ -1,0 +1,55 @@
+# Data loading and preparing
+
+# Load libraries
+```{r}
+library(rethinking)
+```
+
+# Load raw data frame
+```{r}
+load("./data/data_r_in.RData")
+d_in <- data_in
+
+d_in$Swedish <- as.integer(d_in$Swedish) + 1
+d_in$CS <- as.integer(d_in$CS) + 1
+```
+
+# Define model
+```{r}
+dlist <- list(
+      
+      Size = as.integer(d_in$Survey_population),
+      Swedish = as.integer(d_in$Swedish),
+      Overall_s = standardize(as.numeric(d_in$Overall)),
+      Prereq_s = standardize(as.numeric(d_in$Prerequisites)),
+      LearningOut_s = standardize(as.numeric(d_in$LearningOutcome)),
+      Structure_s = standardize(as.numeric(d_in$CourseStruc)),
+      Teaching_s = standardize(as.numeric(d_in$Teaching)),
+      Literature_s = standardize(as.numeric(d_in$Literature)),
+      Assessment_s = standardize(as.numeric(d_in$Assessment)),
+      Admin_s = standardize(as.numeric(d_in$Admin)),
+      Workload_s = standardize(as.numeric(d_in$Workload)),
+      Equality_s = standardize(as.numeric(d_in$Equality))
+)
+
+model_m1 <- ulam(log_lik=TRUE,
+      alist(
+      Overall_s ~ dnorm(mu, sigma),
+      mu <- a[Swedish] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
+      a[Swedish] ~ dnorm(0, 1),
+      b_p ~ dnorm(0, 1),
+      b_l ~ dnorm(0, 1),
+      b_s ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_li ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_ad ~ dnorm(0, 1),
+      b_w ~ dnorm(0, 1),
+      b_e ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+
+# To do: Rewrite as multilevel-model.
+```
