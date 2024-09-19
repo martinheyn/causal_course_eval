@@ -1,0 +1,25 @@
+dag {
+bb="0,0,1,1"
+Assessment [pos="0.293,0.234"]
+Overall [outcome,pos="0.295,0.509"]
+Population [adjusted,pos="0.291,0.063"]
+Returned [pos="0.047,0.314"]
+Room [adjusted,pos="0.293,0.668"]
+Teaching [exposure,pos="0.531,0.334"]
+Workload [pos="0.297,0.387"]
+Assessment -> Returned
+Assessment -> Workload
+Population -> Assessment
+Population -> Returned
+Population -> Teaching
+Returned -> Overall
+Room -> Overall
+Room -> Returned
+Room -> Teaching
+Teaching -> Assessment
+Teaching -> Overall
+Teaching -> Returned
+Teaching -> Workload
+Workload -> Overall
+Workload -> Returned
+}
