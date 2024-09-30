@@ -2,35 +2,61 @@
 
 # Load libraries
 ```{r}
-library(rethinking)
 library(dplyr)
-
+library(corrplot)
+library(ggplot2)
+library(svglite)
+library(rethinking)
 ```
 
 # Load raw data frame and convert to integer and numeric
 ```{r}
 load("./data/data_r_in.RData")
 d_in <- data_in
+d_in_s <- data_in
 
 d_in$Swedish <- as.integer(d_in$Swedish) + 1
 d_in$CS <- as.integer(d_in$CS) + 1
-d_in$Survey_population <- as.integer(d_in$Survey_population)
-d_in$Survey_returned <- as.integer(d_in$Survey_returned)
+d_in$Survey_population <- as.numeric(d_in$Survey_population)
+d_in$Survey_returned <- as.numeric(d_in$Survey_returned)
 d_in$year <- as.integer(d_in$year)
 d_in$study_period <- as.integer(d_in$study_period)
-d_in$Swedish <- as.integer(d_in$Swedish)
 
 d_in$Percentage <- as.numeric(d_in$Percentage)
+d_in_s$Percentage <- standardize(d_in$Percentage)
 d_in$Overall <- as.numeric(d_in$Overall)
+d_in_s$Overall <- standardize(d_in$Overall)
 d_in$Prerequisites <- as.numeric(d_in$Prerequisites)
+d_in_s$Prerequisites <- standardize(d_in$Prerequisites)
 d_in$LearningOutcome <- as.numeric(d_in$LearningOutcome)
+d_in_s$LearningOutcome <- standardize(d_in$LearningOutcome)
 d_in$CourseStruc <- as.numeric(d_in$CourseStruc)
+d_in_s$CourseStruc <- standardize(d_in$CourseStruc)
 d_in$Teaching <- as.numeric(d_in$Teaching)
+d_in_s$Teaching <- standardize(d_in$Teaching)
 d_in$Literature <- as.numeric(d_in$Literature)
+d_in_s$Literature <- standardize(d_in$Literature)
 d_in$Assessment <- as.numeric(d_in$Assessment)
+d_in_s$Assessment <- standardize(d_in$Assessment)
 d_in$Admin <- as.numeric(d_in$Admin)
+d_in_s$Admin <- standardize(d_in$Admin)
 d_in$Workload <- as.numeric(d_in$Workload)
+d_in_s$Workload <- standardize(d_in$Workload)
 d_in$Equality <- as.numeric(d_in$Equality)
+d_in_s$Equality <- standardize(d_in$Equality)
 
-save(d_in, file = "./data/data_r_in_num")
+save(d_in, d_in_s, file = "./data/data_r_in_num")
+```
+
+# Exploring correlations in data
+```{r}
+d_corr <- subset(d_in_s, select = -c(Swedish, CS, Course, year, study_period))
+
+correlations <- cor(d_corr)
+print(correlations)
+
+svg("correlation_plot.svg", width = 10, height = 8)
+corrplot(correlations, method = "pie")
+
+dev.off()
 ```
