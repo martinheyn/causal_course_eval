@@ -1,0 +1,57 @@
+# Simple Version 1
+
+dag {
+bb="0,0,1,1"
+Assessment [pos="0.293,0.234"]
+Overall [outcome,pos="0.295,0.509"]
+Population [adjusted,pos="0.291,0.063"]
+Returned [pos="0.047,0.314"]
+Room [adjusted,pos="0.293,0.668"]
+Teaching [exposure,pos="0.531,0.334"]
+Workload [pos="0.297,0.387"]
+Assessment -> Returned
+Assessment -> Workload
+Population -> Assessment
+Population -> Returned
+Population -> Teaching
+Returned -> Overall
+Room -> Overall
+Room -> Returned
+Room -> Teaching
+Teaching -> Assessment
+Teaching -> Overall
+Teaching -> Returned
+Teaching -> Workload
+Workload -> Overall
+Workload -> Returned
+}
+
+# 2024-09-30
+dag {
+bb="-5.227,-4.547,4.634,4.176"
+A [pos="0.077,0.629"]
+Adm [pos="3.283,0.065"]
+E [pos="1.577,3.449"]
+L [pos="1.406,-2.153"]
+O [outcome,pos="-0.032,-1.397"]
+Out [pos="-1.686,2.987"]
+Pre [pos="-1.657,-3.820"]
+S [exposure,pos="-4.160,0.959"]
+T [pos="2.104,0.815"]
+W [pos="-3.368,-2.379"]
+A -> O
+Adm -> E
+Adm -> L
+Adm -> O
+L -> Pre
+L -> T
+Out -> A
+Out -> E
+Out -> S
+Pre -> W
+S -> O
+S -> W
+T -> A
+T -> E
+T -> O
+}

@@ -1,0 +1,208 @@
+# Load libraries
+```{r}
+library(dplyr)
+library(rethinking)
+```
+
+# Load data
+```{r}
+load("./data/data_r_in.RData")
+```
+
+# Define model
+```{r}
+dlist <- list(
+      Size_s = standardize(d_in$Survey_population),
+      Returned_s = standardize(d_in$Survey_returned),
+      Swedish = d_in$Swedish,
+      CS = d_in$CS,
+      SP = d_in$study_period,
+      Overall_s = standardize(d_in$Overall),
+      Prereq_s = standardize(d_in$Prerequisites),
+      LearningOut_s = standardize(d_in$LearningOutcome),
+      Structure_s = standardize(d_in$CourseStruc),
+      Teaching_s = standardize(d_in$Teaching),
+      Literature_s = standardize(d_in$Literature),
+      Assessment_s = standardize(d_in$Assessment),
+      Admin_s = standardize(d_in$Admin),
+      Workload_s = standardize(d_in$Workload),
+      Equality_s = standardize(d_in$Equality)
+)
+
+# Causal Salad Model
+model_m1 <- ulam(log_lik=TRUE,
+      alist(
+      Overall_s ~ dnorm(mu, sigma),
+      mu <- a_swe[Swedish] + a_sp[SP] + b_size * Size_s + b_ret * Returned_s + b_pre * Prereq_s + b_learn * LearningOut_s + b_struc * Structure_s + b_teach * Teaching_s + b_lit * Literature_s + b_ass * Assessment_s + b_admin * Admin_s + b_work * Workload_s + b_equal * Equality_s,
+      a_swe[Swedish] ~ dnorm(0, 1),
+      # a_cs[CS] ~ dnorm(0, 1),
+      a_sp[SP] ~ dnorm(0, 1),
+      b_size ~ dnorm(0, 1),
+      b_ret ~ dnorm(0, 1),
+      b_pre ~ dnorm(0, 1),
+      b_learn ~ dnorm(0, 1),
+      b_struc ~ dnorm(0, 1),
+      b_teach ~ dnorm(0, 1),
+      b_lit ~ dnorm(0, 1),
+      b_ass ~ dnorm(0, 1),
+      b_admin ~ dnorm(0, 1),
+      b_work ~ dnorm(0, 1),
+      b_equal ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+)
+```
+
+```{r}
+dlist <- list(
+      Overall_s = standardize(d_in$Overall),
+      Size_s = standardize(d_in$Survey_population),
+      Returned_s = standardize(d_in$Survey_returned),
+      Teaching_s = standardize(d_in$Teaching),
+      Assessment_s = standardize(d_in$Assessment),
+      Workload_s = standardize(d_in$Workload)
+)
+# Simplified Causal Salad Model
+model_m1_simple <- ulam(log_lik=TRUE,
+      alist(
+      Overall_s ~ dnorm(mu, sigma),
+      mu <- a + b_size * Size_s + b_ret * Returned_s + b_t * Teaching_s + b_a * Assessment_s + b_w * Workload_s,
+      a ~ dnorm(0, 1),
+      b_size ~ dnorm(0, 1),
+      b_ret ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_w ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+```
+
+```{r}
+
+dlist <- list(
+      Size = standardize(d_in$Survey_population),
+      Returned_s = standardize(d_in$Survey_returned),
+      Swedish = d_in$Swedish,
+      SP = d_in$study_period,
+      Overall_s = standardize(d_in$Overall),
+      Prereq_s = standardize(d_in$Prerequisites),
+      LearningOut_s = standardize(d_in$LearningOutcome),
+      Structure_s = standardize(d_in$CourseStruc),
+      Teaching_s = standardize(d_in$Teaching),
+      Literature_s = standardize(d_in$Literature),
+      Assessment_s = standardize(d_in$Assessment),
+      Admin_s = standardize(d_in$Admin),
+      Workload_s = standardize(d_in$Workload),
+      Equality_s = standardize(d_in$Equality)
+)
+
+# Assocations with number of returned questions
+model_m2 <- ulam(log_lik=TRUE,
+      alist(
+      Returned_s ~ dnorm(mu, sigma),
+      mu <- a_se[Swedish] + a_sp[SP] + b_size * Size + b_pre * Prereq_s + b_learn * LearningOut_s + b_struc * Structure_s + b_teach * Teaching_s + b_lit * Literature_s + b_ass * Assessment_s + b_admin * Admin_s + b_work * Workload_s + b_equal * Equality_s,
+      a_se[Swedish] ~ dnorm(0, 1),
+      a_sp[SP] ~ dnorm(0, 1),
+      b_size ~ dnorm(0, 1),
+      b_pre ~ dnorm(0, 1),
+      b_learn ~ dnorm(0, 1),
+      b_struc ~ dnorm(0, 1),
+      b_teach ~ dnorm(0, 1),
+      b_lit ~ dnorm(0, 1),
+      b_ass ~ dnorm(0, 1),
+      b_admin ~ dnorm(0, 1),
+      b_work ~ dnorm(0, 1),
+      b_equal ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+```
+
+```{r}
+dlist <- list(
+      Overall_s = standardize(d_in$Overall),
+      Size_s = standardize(d_in$Survey_population),
+      Returned_s = standardize(d_in$Survey_returned),
+      Teaching_s = standardize(d_in$Teaching),
+      Assessment_s = standardize(d_in$Assessment),
+      Workload_s = standardize(d_in$Workload)
+)
+# Simplified Causal Salad Model Quap
+model_m1_simple_quap <- quap(
+      alist(
+      Overall_s ~ dnorm(mu, sigma),
+      mu <- a + b_size * Size_s + b_ret * Returned_s + b_t * Teaching_s + b_a * Assessment_s + b_w * Workload_s,
+      a ~ dnorm(0, 1),
+      b_size ~ dnorm(0, 1),
+      b_ret ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_w ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist
+
+)
+
+model_m1_verysimple_quap <- quap(
+      alist(
+      Overall_s ~ dnorm(mu, sigma),
+      mu <- a + b_size * Size_s + b_t * Teaching_s,
+      a ~ dnorm(0, 1),
+      b_size ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist
+
+)
+```
+
+```{r}
+coeftab(model_m1_simple_quap, model_m1_verysimple_quap)
+```
+
+```{r}
+
+dlist <- list(
+      Size = standardize(d_in$Survey_population),
+      Returned_s = standardize(d_in$Survey_returned),
+      Swedish = d_in$Swedish,
+      SP = d_in$study_period,
+      Overall_s = standardize(d_in$Overall),
+      Prereq_s = standardize(d_in$Prerequisites),
+      LearningOut_s = standardize(d_in$LearningOutcome),
+      Structure_s = standardize(d_in$CourseStruc),
+      Teaching_s = standardize(d_in$Teaching),
+      Literature_s = standardize(d_in$Literature),
+      Assessment_s = standardize(d_in$Assessment),
+      Admin_s = standardize(d_in$Admin),
+      Workload_s = standardize(d_in$Workload),
+      Equality_s = standardize(d_in$Equality)
+)
+
+# Assocations with number of returned questions
+model_m3 <- ulam(log_lik=TRUE,
+      alist(
+      Teaching_s ~ dnorm(mu, sigma),
+      mu <- a_se[Swedish] + a_sp[SP] + b_size * Size + b_pre * Prereq_s + b_ret * Returned_s + b_learn * LearningOut_s + b_struc * Structure_s + b_lit * Literature_s + b_ass * Assessment_s + b_admin * Admin_s + b_work * Workload_s + b_equal * Equality_s,
+      a ~ dnorm(0,1),
+      a_se[Swedish] ~ dnorm(0, 1),
+      a_sp[SP] ~ dnorm(0, 1),
+      b_size ~ dnorm(0, 1),
+      b_ret ~ dnorm(0, 1),
+      b_pre ~ dnorm(0, 1),
+      b_learn ~ dnorm(0, 1),
+      b_struc ~ dnorm(0, 1),
+      b_teach ~ dnorm(0, 1),
+      b_lit ~ dnorm(0, 1),
+      b_ass ~ dnorm(0, 1),
+      b_admin ~ dnorm(0, 1),
+      b_work ~ dnorm(0, 1),
+      b_equal ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+```
