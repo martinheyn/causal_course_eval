@@ -31,7 +31,9 @@ dlist <- list(
       Workload_s = standardize(as.numeric(d_in$Workload)),
       Equality_s = standardize(as.numeric(d_in$Equality))
 )
+```
 
+```{r}
 model_m1 <- ulam(log_lik=TRUE,
       alist(
       Overall_s ~ dnorm(mu, sigma),
@@ -45,6 +47,25 @@ model_m1 <- ulam(log_lik=TRUE,
       b_a ~ dnorm(0, 1),
       b_ad ~ dnorm(0, 1),
       b_w ~ dnorm(0, 1),
+      b_e ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+```
+
+```{r}
+model_mrq1 <- ulam(log_lik=TRUE,
+      alist(
+      Workload_s ~ dnorm(mu, sigma),
+      mu <- b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s,
+      b_p ~ dnorm(0, 1),
+      b_l ~ dnorm(0, 1),
+      b_s ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_li ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_ad ~ dnorm(0, 1),
       b_e ~ dnorm(0, 1),
       sigma ~ dexp(1)
       ), data = dlist, chains = 2, cores = 2
