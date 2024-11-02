@@ -89,10 +89,11 @@ model_m1 <- ulam(log_lik=TRUE,
 ```
 
 ```{r}
-model_mrq1 <- ulam(log_lik=TRUE,
+model_mrq1a <- ulam(log_lik=TRUE,
       alist(
       Workload_s ~ dnorm(mu, sigma),
-      mu <- b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s,
+      mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s,
+      a_0 ~ dnorm(0, 1),
       b_p ~ dnorm(0, 1),
       b_l ~ dnorm(0, 1),
       b_s ~ dnorm(0, 1),
@@ -105,6 +106,93 @@ model_mrq1 <- ulam(log_lik=TRUE,
       ), data = dlist, chains = 2, cores = 2
 
 )
+```
+
+```{r}
+model_mrq1b <- ulam(log_lik=TRUE,
+      alist(
+      Workload_s ~ dnorm(mu, sigma),
+      mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s,
+      a_0 ~ dnorm(0, 1),
+      b_p ~ dnorm(0, 1),
+      b_l ~ dnorm(0, 1),
+      b_s ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_li ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_ad ~ dnorm(0, 1),
+      b_e ~ dnorm(0, 1),
+      sigma ~ dexp(1),
+
+      # Quality of Teaching influenced by other teaching related factors
+      Teaching_s ~ dnorm(nu, tau),
+      nu <- a_T + b_l_t * LearningOut_s + b_s_t * Structure_s + b_li_t * Literature_s + b_a_t * Assessment_s + b_ad_t * Admin_s + b_e_t * Equality_s,
+      a_T ~ dnorm(0, 1),
+      b_l_t ~ dnorm(0, 1),
+      b_s_t ~ dnorm(0, 1),
+      b_li_t ~ dnorm(0, 1),
+      b_a_t ~ dnorm(0, 1),
+      b_ad_t ~ dnorm(0, 1),
+      b_e_t ~ dnorm(0, 1),
+      tau ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+```
+
+```{r}
+model_mrq1c <- ulam(log_lik=TRUE,
+      alist(
+      Workload_s ~ dnorm(mu, sigma),
+      mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s + b_o * Overall_s,
+      a_0 ~ dnorm(0, 1),
+      b_p ~ dnorm(0, 1),
+      b_l ~ dnorm(0, 1),
+      b_s ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_li ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_ad ~ dnorm(0, 1),
+      b_e ~ dnorm(0, 1),
+      b_o ~ dnorm(0, 1),
+      sigma ~ dexp(1),
+
+      # Overall impression is related to everything
+      Overall_s ~ dnorm(nu, tau),
+      nu <- a_o + b_p_o * Prereq_s + b_l_o * LearningOut_s + b_s_o * Structure_s + b_t_o * Teaching_s + b_li_o * Literature_s + b_a_o * Assessment_s + b_ad_o * Admin_s + b_e_o * Equality_s,
+      a_o ~ dnorm(0, 1),
+      b_p_o ~ dnorm(0, 1),
+      b_l_o ~ dnorm(0, 1),
+      b_s_o ~ dnorm(0, 1),
+      b_t_o ~ dnorm(0, 1),
+      b_li_o ~ dnorm(0, 1),
+      b_a_o ~ dnorm(0, 1),
+      b_ad_o ~ dnorm(0, 1),
+      b_e_o ~ dnorm(0, 1),
+      tau ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+```
+
+model_m2 <- ulam(log_lik=TRUE,
+    alist(
+    # T_S -> C_MW model 
+    C_MW ~ dnorm(mu, sigma),
+    mu <- a_C + b_C_T * T_S_std,
+    a_C ~ dnorm(0, 1),
+    b_C_T ~ dnorm(0.5, 0.5),
+    sigma ~ dexp(1),
+
+    # Sol -> T_S model
+    T_S_std ~ dnorm(nu, tau),
+    nu <- a_T + b_T_S * Sol_std,
+    a_T ~ dnorm(0.5, 1),
+    b_T_S ~ dnorm(0.5, 0.5),
+    tau ~ dexp(1)
+    ), data = dlist, chains = 2, cores = 2
+)
+
 ```
 
 ```{r}
