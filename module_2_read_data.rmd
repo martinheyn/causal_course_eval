@@ -4,16 +4,16 @@
 ```{r}
 library(dplyr)
 library(corrplot)
-library(ggplot2)
-library(svglite)
 library(rethinking)
+library(svglite)
+library(ggplot2)
 ```
 
 # Load raw data frame and convert to integer and numeric
 ```{r}
 load("./data/data_r_in.RData")
 d_in <- data_in
-d_in_s <- data_in
+
 
 d_in$Swedish <- as.integer(d_in$Swedish) + 1
 d_in$CS <- as.integer(d_in$CS) + 1
@@ -21,182 +21,42 @@ d_in$Survey_population <- as.numeric(d_in$Survey_population)
 d_in$Survey_returned <- as.numeric(d_in$Survey_returned)
 d_in$year <- as.integer(d_in$year)
 d_in$study_period <- as.integer(d_in$study_period)
-
 d_in$Percentage <- as.numeric(d_in$Percentage)
-d_in_s$Percentage <- standardize(d_in$Percentage)
 d_in$Overall <- as.numeric(d_in$Overall)
-d_in_s$Overall <- standardize(d_in$Overall)
 d_in$Prerequisites <- as.numeric(d_in$Prerequisites)
-d_in_s$Prerequisites <- standardize(d_in$Prerequisites)
 d_in$LearningOutcome <- as.numeric(d_in$LearningOutcome)
-d_in_s$LearningOutcome <- standardize(d_in$LearningOutcome)
 d_in$CourseStruc <- as.numeric(d_in$CourseStruc)
-d_in_s$CourseStruc <- standardize(d_in$CourseStruc)
 d_in$Teaching <- as.numeric(d_in$Teaching)
-d_in_s$Teaching <- standardize(d_in$Teaching)
 d_in$Literature <- as.numeric(d_in$Literature)
-d_in_s$Literature <- standardize(d_in$Literature)
 d_in$Assessment <- as.numeric(d_in$Assessment)
-d_in_s$Assessment <- standardize(d_in$Assessment)
 d_in$Admin <- as.numeric(d_in$Admin)
-d_in_s$Admin <- standardize(d_in$Admin)
 d_in$Workload <- as.numeric(d_in$Workload)
-d_in_s$Workload <- standardize(d_in$Workload)
 d_in$Equality <- as.numeric(d_in$Equality)
+
+d_in_s <- d_in
+
+# Standardise the variables
+d_in_s$Percentage <- standardize(d_in$Percentage)
+d_in_s$Overall <- standardize(d_in$Overall)
+d_in_s$Prerequisites <- standardize(d_in$Prerequisites)
+d_in_s$LearningOutcome <- standardize(d_in$LearningOutcome)
+d_in_s$Teaching <- standardize(d_in$Teaching)
+d_in_s$CourseStruc <- standardize(d_in$CourseStruc)
+d_in_s$Literature <- standardize(d_in$Literature)
+d_in_s$Assessment <- standardize(d_in$Assessment)
+d_in_s$Admin <- standardize(d_in$Admin)
+d_in_s$Workload <- standardize(d_in$Workload)
 d_in_s$Equality <- standardize(d_in$Equality)
 
-save(d_in, d_in_s, file = "./data/data_r_in_num")
+
+save(d_in, d_in_s, file = "./data/data_r_in_num.RData")
 ```
 
-# Exploring correlations in data
-```{r}
-dlist <- list(
-      
-      Size = as.integer(d_in$Survey_population),
-      Swedish = as.integer(d_in$Swedish),
-      Overall_s = standardize(as.numeric(d_in$Overall)),
-      Prereq_s = standardize(as.numeric(d_in$Prerequisites)),
-      LearningOut_s = standardize(as.numeric(d_in$LearningOutcome)),
-      Structure_s = standardize(as.numeric(d_in$CourseStruc)),
-      Teaching_s = standardize(as.numeric(d_in$Teaching)),
-      Literature_s = standardize(as.numeric(d_in$Literature)),
-      Assessment_s = standardize(as.numeric(d_in$Assessment)),
-      Admin_s = standardize(as.numeric(d_in$Admin)),
-      Workload_s = standardize(as.numeric(d_in$Workload)),
-      Equality_s = standardize(as.numeric(d_in$Equality))
-)
-```
-
-```{r}
-model_m1 <- ulam(log_lik=TRUE,
-      alist(
-      Overall_s ~ dnorm(mu, sigma),
-      mu <- a[Swedish] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
-      a[Swedish] ~ dnorm(0, 1),
-      b_p ~ dnorm(0, 1),
-      b_l ~ dnorm(0, 1),
-      b_s ~ dnorm(0, 1),
-      b_t ~ dnorm(0, 1),
-      b_li ~ dnorm(0, 1),
-      b_a ~ dnorm(0, 1),
-      b_ad ~ dnorm(0, 1),
-      b_w ~ dnorm(0, 1),
-      b_e ~ dnorm(0, 1),
-      sigma ~ dexp(1)
-      ), data = dlist, chains = 2, cores = 2
-
-)
-```
-
-```{r}
-model_mrq1a <- ulam(log_lik=TRUE,
-      alist(
-      Workload_s ~ dnorm(mu, sigma),
-      mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s,
-      a_0 ~ dnorm(0, 1),
-      b_p ~ dnorm(0, 1),
-      b_l ~ dnorm(0, 1),
-      b_s ~ dnorm(0, 1),
-      b_t ~ dnorm(0, 1),
-      b_li ~ dnorm(0, 1),
-      b_a ~ dnorm(0, 1),
-      b_ad ~ dnorm(0, 1),
-      b_e ~ dnorm(0, 1),
-      sigma ~ dexp(1)
-      ), data = dlist, chains = 2, cores = 2
-
-)
-```
-
-```{r}
-model_mrq1b <- ulam(log_lik=TRUE,
-      alist(
-      Workload_s ~ dnorm(mu, sigma),
-      mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s,
-      a_0 ~ dnorm(0, 1),
-      b_p ~ dnorm(0, 1),
-      b_l ~ dnorm(0, 1),
-      b_s ~ dnorm(0, 1),
-      b_t ~ dnorm(0, 1),
-      b_li ~ dnorm(0, 1),
-      b_a ~ dnorm(0, 1),
-      b_ad ~ dnorm(0, 1),
-      b_e ~ dnorm(0, 1),
-      sigma ~ dexp(1),
-
-      # Quality of Teaching influenced by other teaching related factors
-      Teaching_s ~ dnorm(nu, tau),
-      nu <- a_T + b_l_t * LearningOut_s + b_s_t * Structure_s + b_li_t * Literature_s + b_a_t * Assessment_s + b_ad_t * Admin_s + b_e_t * Equality_s,
-      a_T ~ dnorm(0, 1),
-      b_l_t ~ dnorm(0, 1),
-      b_s_t ~ dnorm(0, 1),
-      b_li_t ~ dnorm(0, 1),
-      b_a_t ~ dnorm(0, 1),
-      b_ad_t ~ dnorm(0, 1),
-      b_e_t ~ dnorm(0, 1),
-      tau ~ dexp(1)
-      ), data = dlist, chains = 2, cores = 2
-
-)
-```
-
-```{r}
-model_mrq1c <- ulam(log_lik=TRUE,
-      alist(
-      Workload_s ~ dnorm(mu, sigma),
-      mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s + b_o * Overall_s,
-      a_0 ~ dnorm(0, 1),
-      b_p ~ dnorm(0, 1),
-      b_l ~ dnorm(0, 1),
-      b_s ~ dnorm(0, 1),
-      b_t ~ dnorm(0, 1),
-      b_li ~ dnorm(0, 1),
-      b_a ~ dnorm(0, 1),
-      b_ad ~ dnorm(0, 1),
-      b_e ~ dnorm(0, 1),
-      b_o ~ dnorm(0, 1),
-      sigma ~ dexp(1),
-
-      # Overall impression is related to everything
-      Overall_s ~ dnorm(nu, tau),
-      nu <- a_o + b_p_o * Prereq_s + b_l_o * LearningOut_s + b_s_o * Structure_s + b_t_o * Teaching_s + b_li_o * Literature_s + b_a_o * Assessment_s + b_ad_o * Admin_s + b_e_o * Equality_s,
-      a_o ~ dnorm(0, 1),
-      b_p_o ~ dnorm(0, 1),
-      b_l_o ~ dnorm(0, 1),
-      b_s_o ~ dnorm(0, 1),
-      b_t_o ~ dnorm(0, 1),
-      b_li_o ~ dnorm(0, 1),
-      b_a_o ~ dnorm(0, 1),
-      b_ad_o ~ dnorm(0, 1),
-      b_e_o ~ dnorm(0, 1),
-      tau ~ dexp(1)
-      ), data = dlist, chains = 2, cores = 2
-
-)
-```
-
-model_m2 <- ulam(log_lik=TRUE,
-    alist(
-    # T_S -> C_MW model 
-    C_MW ~ dnorm(mu, sigma),
-    mu <- a_C + b_C_T * T_S_std,
-    a_C ~ dnorm(0, 1),
-    b_C_T ~ dnorm(0.5, 0.5),
-    sigma ~ dexp(1),
-
-    # Sol -> T_S model
-    T_S_std ~ dnorm(nu, tau),
-    nu <- a_T + b_T_S * Sol_std,
-    a_T ~ dnorm(0.5, 1),
-    b_T_S ~ dnorm(0.5, 0.5),
-    tau ~ dexp(1)
-    ), data = dlist, chains = 2, cores = 2
-)
-
-```
-
+# Make a simple correlation plot
 ```{r}
 d_corr <- subset(d_in_s, select = -c(Swedish, CS, Course, year, study_period))
+
+d_corr_matrix <- matrix(unlist(d_corr))
 
 correlations <- cor(d_corr)
 print(correlations)
