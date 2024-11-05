@@ -55,3 +55,42 @@ T -> A
 T -> E
 T -> O
 }
+
+
+# Final Model
+dag {
+bb="0,0,1,1"
+Adm. [pos="0.870,0.186"]
+Assess. [pos="0.681,0.623"]
+Equal. [pos="0.787,0.258"]
+Learn.Out. [pos="0.706,0.750"]
+Literature [pos="0.846,0.363"]
+Overall [outcome,pos="0.868,0.854"]
+Prereq. [pos="0.689,0.439"]
+Structure [pos="0.638,0.847"]
+Teaching [exposure,pos="0.641,0.380"]
+Workload [pos="0.754,0.539"]
+return [pos="0.759,0.187"]
+size [pos="0.638,0.187"]
+Adm. -> Equal.
+Adm. -> Overall
+Adm. -> return
+Assess. -> Overall
+Assess. -> Workload
+Learn.Out. -> Assess.
+Learn.Out. -> Overall
+Learn.Out. -> Structure
+Literature -> Equal.
+Literature -> Overall
+Prereq. -> Workload
+Structure -> Overall
+Teaching -> Assess.
+Teaching -> Equal.
+Teaching -> Literature
+Teaching -> Overall [pos="0.833,0.396"]
+Teaching -> Structure
+Teaching -> return
+Workload -> Overall
+size -> Teaching
+size -> return
+}
