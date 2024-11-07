@@ -32,8 +32,7 @@ d_in$Assessment <- as.numeric(d_in$Assessment)
 d_in$Admin <- as.numeric(d_in$Admin)
 d_in$Workload <- as.numeric(d_in$Workload)
 d_in$Equality <- as.numeric(d_in$Equality)
-
-d_in_s <- d_in
+d_in$InEquality_bin <- as.integer(ifelse(d_in$Equality < 4.0, 2, 1))
 
 # Standardise the variables
 d_in_s$Percentage <- standardize(d_in$Percentage)
@@ -47,7 +46,6 @@ d_in_s$Assessment <- standardize(d_in$Assessment)
 d_in_s$Admin <- standardize(d_in$Admin)
 d_in_s$Workload <- standardize(d_in$Workload)
 d_in_s$Equality <- standardize(d_in$Equality)
-
 
 save(d_in, d_in_s, file = "./data/data_r_in_num.RData")
 ```

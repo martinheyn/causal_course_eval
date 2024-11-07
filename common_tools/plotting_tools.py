@@ -25,3 +25,5 @@ def plot_pretty_boxplot(dataframe, data_name, filename, xdown, xup, label, palet
       plt.subplots_adjust(bottom=0.3)
       plt.xlabel(label)
       plt.savefig(filename + '.pdf', format='pdf')
+    
+    # Defines a function for plotting pretty boxplots
