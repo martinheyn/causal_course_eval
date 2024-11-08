@@ -128,7 +128,44 @@ model_mrq1b <- ulam(log_lik=TRUE,
 
 )
 ```
+```{r}
+model_mequality <- ulam(log_lik=TRUE,
+      alist(
+      Equality_s ~ dnorm(mu, sigma),
+      mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_w * Workload_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s,
+      a_0 ~ dnorm(0, 1),
+      b_p ~ dnorm(0, 1),
+      b_l ~ dnorm(0, 1),
+      b_s ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_w ~ dnorm(0, 1),
+      b_li ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_ad ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+)
+```
 
+```{r}
+model_mrq1a <- ulam(log_lik=TRUE,
+      alist(
+      Workload_s ~ dnorm(mu, sigma),
+      mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e[Equality_bin],
+      a_0 ~ dnorm(0, 1),
+      b_p ~ dnorm(0, 1),
+      b_l ~ dnorm(0, 1),
+      b_s ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_li ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_ad ~ dnorm(0, 1),
+      b_e[Equality_bin] ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+```
 ## Saving the models so we do not have to re-run them all the time.
 ```{r}
 precis(model_mrq1a, prob=0.9, digits = 3)
@@ -145,4 +182,15 @@ data_mrq1a <- extract.samples(model_mrq1a)
 data_mrq1b <- extract.samples(model_mrq1b)
 
 save(data_m1, data_m1_eq, data_mrq1a, data_mrq1b, file = "./data/modeldata_real_out.RData")
+```
+
+
+```{r}
+load("./data/model_real_out.RData")
+load("./data/modeldata_real_out.RData")
+
+data_mequality <- extract.samples(model_mequality)
+
+save(model_mequality, model_m1, model_m1_eq, model_mrq1a, model_mrq1b, file = "./data/model_real_out.RData")
+save(data_mequality, data_m1, data_m1_eq, data_mrq1a, data_mrq1b, file = "./data/modeldata_real_out.RData")
 ```
