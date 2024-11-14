@@ -129,7 +129,7 @@ model_mrq1b <- ulam(log_lik=TRUE,
 )
 ```
 ```{r}
-model_mequality <- ulam(log_lik=TRUE,
+model_mequality_new <- ulam(log_lik=TRUE,
       alist(
       Equality_s ~ dnorm(mu, sigma),
       mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_w * Workload_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s,
@@ -166,6 +166,56 @@ model_mrq1a <- ulam(log_lik=TRUE,
 
 )
 ```
+
+```{r}
+model_mtot <- ulam(log_lik=TRUE,
+      alist(
+      Overall_s ~ dnorm(mu, sigma),
+      mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s + b_w * Workload_s,
+      Workload_s ~ dnorm(nu_w, tau_w),
+      nu_w <- a_w + b_w_p * Prereq_s + b_w_s * Structure_s + b_w_t * Teaching_s + b_w_l * LearningOut_s,
+      LearningOut_s ~ dnorm(nu_l, tau_l),
+      nu_l <- a_l + b_l_t * Teaching_s,
+      Equality_s ~ dnorm(nu_e, tau_e),
+      nu_e <- a_e + b_e_t * Teaching_s + b_e_ad * Admin_s,
+      Assessment_s ~ dnorm(nu_a, tau_a),
+      nu_a <- a_a + b_a_t * Teaching_s,
+      Teaching_s ~ dnorm(nu_t, tau_t),
+      nu_t <- a_t + b_t_l * Literature_s,
+      a_0 ~ dnorm(0, 1),
+      a_w ~ dnorm(0, 1),
+      a_l ~ dnorm(0, 1),
+      a_e ~ dnorm(0, 1),
+      a_a ~ dnorm(0, 1),
+      a_t ~ dnorm(0, 1),
+      b_p ~ dnorm(0, 1),
+      b_w_p ~ dnorm(0, 1),
+      b_l ~ dnorm(0, 1),
+      b_t_l ~ dnorm(0, 1),
+      b_w_l ~ dnorm(0, 1),
+      b_s ~ dnorm(0, 1),
+      b_w_s ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_l_t ~ dnorm(0, 1),
+      b_e_t ~ dnorm(0, 1),
+      b_a_t ~ dnorm(0, 1),
+      b_w_t ~ dnorm(0, 1),
+      b_li ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_ad ~ dnorm(0, 1),
+      b_e_ad ~ dnorm(0, 1),
+      b_e ~ dnorm(0, 1),
+      b_w ~ dnorm(0, 1), 
+      sigma ~ dexp(1),
+      tau_w ~ dexp(1),
+      tau_l ~ dexp(1),
+      tau_e ~ dexp(1),
+      tau_a ~ dexp(1),
+      tau_t ~ dexp(1)
+      ), data = dlist, chains = 4, cores = 4
+
+)
+```
 ## Saving the models so we do not have to re-run them all the time.
 ```{r}
 precis(model_mrq1a, prob=0.9, digits = 3)
@@ -173,15 +223,16 @@ precis(model_mrq1b, prob=0.9, digits = 3)
 
 compare(model_mrq1a, model_mrq1b)
 
-save(model_m1, model_m1_eq, model_mrq1a, model_mrq1b, file = "./data/model_real_out.RData")
+save(model_m1, model_m1_eq, model_mrq1a, model_mrq1b, model_mtot, file = "./data/model_real_out.RData")
 
 ## Exporting the data from the models for plotting in seaborn
 data_m1 <- extract.samples(model_m1)
 data_m1_eq <- extract.samples(model_m1_eq)
 data_mrq1a <- extract.samples(model_mrq1a)
 data_mrq1b <- extract.samples(model_mrq1b)
+data_mtot <- extract.samples(model_mtot)
 
-save(data_m1, data_m1_eq, data_mrq1a, data_mrq1b, file = "./data/modeldata_real_out.RData")
+save(data_m1, data_m1_eq, data_mrq1a, data_mrq1b, data_mtot, file = "./data/modeldata_real_out.RData")
 ```
 
 
@@ -189,8 +240,8 @@ save(data_m1, data_m1_eq, data_mrq1a, data_mrq1b, file = "./data/modeldata_real_
 load("./data/model_real_out.RData")
 load("./data/modeldata_real_out.RData")
 
-data_mequality <- extract.samples(model_mequality)
+data_mequality_new <- extract.samples(model_mequality_new)
 
-save(model_mequality, model_m1, model_m1_eq, model_mrq1a, model_mrq1b, file = "./data/model_real_out.RData")
-save(data_mequality, data_m1, data_m1_eq, data_mrq1a, data_mrq1b, file = "./data/modeldata_real_out.RData")
+save(model_mequality_new, model_m1, model_m1_eq, model_mrq1a, model_mrq1b, file = "./data/model_real_out.RData")
+save(data_mequality_new, data_m1, data_m1_eq, data_mrq1a, data_mrq1b, file = "./data/modeldata_real_out.RData")
 ```
