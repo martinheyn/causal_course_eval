@@ -15,7 +15,9 @@ load("./data/data_r_in_num.RData")
 # Exploring correlations in data
 ```{r}
 dlist <- list(
-      
+      Population = as.integer(d_in$Survey_population),
+      Returned = as.integer(d_in$Survey_returned),
+      StudyPeriod = as.integer(d_in$study_period),
       Size = as.integer(d_in$Survey_population),
       Swedish = as.integer(d_in$Swedish),
       Overall_s = standardize(as.numeric(d_in$Overall)),
@@ -36,7 +38,8 @@ dlist <- list(
 model_m1 <- ulam(log_lik=TRUE,
       alist(
       Overall_s ~ dnorm(mu, sigma),
-      mu <- a[Swedish] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
+      mu <- a_s[StudyPeriod] + a[Swedish] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
+      a_s[StudyPeriod] ~ dnorm(0, 1),
       a[Swedish] ~ dnorm(0, 1),
       b_p ~ dnorm(0, 1),
       b_l ~ dnorm(0, 1),
@@ -113,10 +116,53 @@ model_mteach <- ulam(log_lik=TRUE,
 ```
 
 ```{r}
+model_mtreturn <- ulam(log_lik=TRUE,
+      alist(
+      Returned ~ dbinom(Population, p),
+      logit(p) <- a[StudyPeriod] + b_o * Overall_s + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
+      a[StudyPeriod] ~ dnorm(0, 1),
+      b_o ~ dnorm(0, 1),
+      b_p ~ dnorm(0, 1),
+      b_l ~ dnorm(0, 1),
+      b_s ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_li ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_ad ~ dnorm(0, 1),
+      b_w ~ dnorm(0, 1),
+      b_e ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+```
+
+```{r}
+model_mreturn <- ulam(log_lik=TRUE,
+      alist(
+      Returned ~ dbinom(Population, p),
+      logit(p) <- a[StudyPeriod] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
+      a[StudyPeriod] ~ dnorm(0, 1),
+      b_p ~ dnorm(0, 1),
+      b_l ~ dnorm(0, 1),
+      b_s ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_li ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_ad ~ dnorm(0, 1),
+      b_w ~ dnorm(0, 1),
+      b_e ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+```
+
+```{r}
 model_mtot <- ulam(log_lik=TRUE,
       alist(
       Overall_s ~ dnorm(mu, sigma),
-      mu <- a[Swedish] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s + b_w * Workload_s,
+      mu <- a_0 + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_e * Equality_s + b_w * Workload_s,
       Workload_s ~ dnorm(nu_w, tau_w),
       nu_w <- a_w + b_w_p * Prereq_s + b_w_s * Structure_s + b_w_t * Teaching_s + b_w_l * LearningOut_s,
       LearningOut_s ~ dnorm(nu_l, tau_l),
@@ -127,7 +173,7 @@ model_mtot <- ulam(log_lik=TRUE,
       nu_a <- a_a + b_a_t * Teaching_s,
       Teaching_s ~ dnorm(nu_t, tau_t),
       nu_t <- a_t + b_t_l * Literature_s,
-      a[Swedish] ~ dnorm(0, 1),
+      a_0 ~ dnorm(0, 1),
       a_w ~ dnorm(0, 1),
       a_l ~ dnorm(0, 1),
       a_e ~ dnorm(0, 1),
