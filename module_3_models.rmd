@@ -260,8 +260,9 @@ model_mequal <- ulam(log_lik=TRUE,
 model_mreturn <- ulam(log_lik=TRUE,
       alist(
       Returned ~ dbinom(Population, p),
-      logit(p) <- a[StudyPeriod] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
-      a[StudyPeriod] ~ dnorm(0, 1),
+      logit(p) <- a[Swedish] + c[StudyPeriod] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
+      a[Swedish] ~ dnorm(0, 1),
+      c[StudyPeriod] ~ dnorm(0, 1),
       b_p ~ dnorm(0, 1),
       b_l ~ dnorm(0, 1),
       b_s ~ dnorm(0, 1),
@@ -364,4 +365,5 @@ precis(model_massess, prob = 0.9, digits = 2)
 precis(model_madmin, prob = 0.9, digits = 2)
 precis(model_mwork, prob = 0.9, digits = 2)
 precis(model_mequal, prob = 0.9, digits = 2)
+precis(model_mreturn, prob = 0.9, digits = 2)
 ```
