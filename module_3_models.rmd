@@ -260,9 +260,31 @@ model_mequal <- ulam(log_lik=TRUE,
 model_mreturn <- ulam(log_lik=TRUE,
       alist(
       Returned ~ dbinom(Population, p),
-      logit(p) <- a[Swedish] + c[StudyPeriod] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
+      logit(p) <- a[Swedish] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
       a[Swedish] ~ dnorm(0, 1),
-      c[StudyPeriod] ~ dnorm(0, 1),
+      #c[StudyPeriod] ~ dnorm(0, 1),
+      b_p ~ dnorm(0, 1),
+      b_l ~ dnorm(0, 1),
+      b_s ~ dnorm(0, 1),
+      b_t ~ dnorm(0, 1),
+      b_li ~ dnorm(0, 1),
+      b_a ~ dnorm(0, 1),
+      b_ad ~ dnorm(0, 1),
+      b_w ~ dnorm(0, 1),
+      b_e ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+      ), data = dlist, chains = 2, cores = 2
+
+)
+```
+
+```{r}
+model_mreturn_1 <- ulam(log_lik=TRUE,
+      alist(
+      Returned ~ dbinom(Population, p),
+      logit(p) <- a[StudyPeriod] + b_p * Prereq_s + b_l * LearningOut_s + b_s * Structure_s + b_t * Teaching_s + b_li * Literature_s + b_a * Assessment_s + b_ad * Admin_s + b_w * Workload_s + b_e * Equality_s,
+      #a[Swedish] ~ dnorm(0, 1),
+      a[StudyPeriod] ~ dnorm(0, 1),
       b_p ~ dnorm(0, 1),
       b_l ~ dnorm(0, 1),
       b_s ~ dnorm(0, 1),
@@ -330,7 +352,7 @@ model_mtot <- ulam(log_lik=TRUE,
 
 ## Saving the models so we do not have to re-run them all the time.
 ```{r}
-save(model_moverall, model_mprereq, model_mlearningout, model_mstruct, model_mteach, model_mlit, model_massess, model_madmin, model_mwork, model_mequal, model_mreturn, file = "./data/model_real_out.RData")
+save(model_moverall, model_mprereq, model_mlearningout, model_mstruct, model_mteach, model_mlit, model_massess, model_madmin, model_mwork, model_mequal, model_mreturn, model_mreturn_1, file = "./data/model_real_out.RData")
 
 ## Exporting the data from the models for plotting in seaborn
 data_moverall <- extract.samples(model_moverall)
@@ -344,8 +366,9 @@ data_madmin <- extract.samples(model_madmin)
 data_mwork <- extract.samples(model_mwork)
 data_mequal <- extract.samples(model_mequal)
 data_mreturn <- extract.samples(model_mreturn)
+data_mreturn_1 <- extract.samples(model_mreturn_1)
 
-save(data_moverall, data_mprereq, data_mlearningout, data_mstruct, data_mteach, data_mlit, data_massess, data_madmin, data_mwork, data_mequal, data_mreturn, file = "./data/modeldata_real_out.RData")
+save(data_moverall, data_mprereq, data_mlearningout, data_mstruct, data_mteach, data_mlit, data_massess, data_madmin, data_mwork, data_mequal, data_mreturn, data_mreturn_1, file = "./data/modeldata_real_out.RData")
 ```
 
 
@@ -366,4 +389,5 @@ precis(model_madmin, prob = 0.9, digits = 2)
 precis(model_mwork, prob = 0.9, digits = 2)
 precis(model_mequal, prob = 0.9, digits = 2)
 precis(model_mreturn, prob = 0.9, digits = 2)
+precis(model_mreturn_1, prob = 0.9, digits = 2)
 ```
